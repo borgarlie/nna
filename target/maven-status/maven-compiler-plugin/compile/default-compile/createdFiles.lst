@@ -1,0 +1,3 @@
+com\bgames\controller\MainController.class
+com\bgames\config\InitializeDispatcherServlet.class
+com\bgames\config\Configuration.class
