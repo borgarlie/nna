@@ -1,0 +1,218 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <style type="text/css">
+        body {
+            /*background-color: red;*/
+            -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+            -moz-user-select: none; /* mozilla browsers */
+            -khtml-user-select: none; /* webkit (konqueror) browsers */
+            -ms-user-select: none; /* IE10+ */
+        }
+        #canvas {
+            background-color: yellow;
+            /*cursor: none;*/
+        }
+    </style>
+</head>
+<Body>
+    <br><br>
+    <center>
+    <canvas height="700" id="canvas" width="1000" onclick="click()"></canvas>
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+
+            rightDown = false;
+            leftDown = false;
+            upDown = false;
+            downDown = false;
+
+            var x = 150;
+            var y = 150;
+            var dx = 2;
+            var dy = 4;
+            var WIDTH;
+            var HEIGHT;
+            var ctx;
+            var intervalId = 0;
+            var paddlex;
+            var paddleh = 10;
+            var paddlew = 75;
+            var paddley;
+            var degrees = 135;
+
+            var bullets = [];
+
+            var mousePos = {
+                x: 500,
+                y: 500
+            };
+
+            function clear() {
+              ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            }
+
+            function init() {
+              ctx = $('#canvas')[0].getContext("2d");
+              WIDTH = $("#canvas").width()
+              HEIGHT = $("#canvas").height()
+              intervalId = setInterval(draw, 10);
+              return intervalId;
+            }
+
+            function circle(x,y,r) {
+              ctx.beginPath();
+              ctx.arc(x, y, r, 0, Math.PI*2, true);
+              ctx.closePath();
+              ctx.fill();
+            }
+
+            function rect(x,y,w,h) {
+                ctx.beginPath();
+                ctx.rect(x,y,w,h);
+                ctx.closePath();
+                ctx.fill();
+                rect2(x,y,w,h);
+            }
+
+            function rect2(x,y,w,h) {
+                ctx.save();
+                ctx.beginPath();
+                var element = document.getElementById("canvas");
+                var offsetx = element.offsetLeft;
+                var offsety = element.offsetTop;
+                var posx = x + paddlew / 2 + offsetx;
+                var posy = y + offsety;
+                var radians = Math.atan2(mousePos.x - posx, mousePos.y - posy);
+                degrees = (radians * (180 / Math.PI) * -1 + 180);
+                degrees += 90;
+                ctx.translate(x + paddlew / 2, y + paddleh / 2);
+                ctx.rotate(degrees * Math.PI / 180);
+                ctx.rect(-paddlew / 2, -paddleh / 2, 40, 10);
+                ctx.fillStyle = "red";
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function init_snake() {
+              paddlex = WIDTH / 2;
+              paddley = HEIGHT / 2;
+              paddleh = 10;
+              paddlew = 75;
+            }
+
+            function onKeyDown(evt) {
+              if (evt.keyCode == 39) rightDown = true;
+              else if (evt.keyCode == 37) leftDown = true;
+              else if (evt.keyCode == 38) upDown = true;
+              else if (evt.keyCode == 40) downDown = true;
+            }
+
+            function onKeyUp(evt) {
+              if (evt.keyCode == 39) rightDown = false;
+              else if (evt.keyCode == 37) leftDown = false;
+              else if (evt.keyCode == 38) upDown = false;
+              else if (evt.keyCode == 40) downDown = false;
+            }
+
+            var elem = document.getElementById("canvas");
+
+            elem.addEventListener('mousedown', function(event) {
+                var bullet = {};
+                bullet.x = paddlex + paddlew / 2;
+                bullet.y = paddley + paddleh / 2;
+                bullet.dx = -3 * Math.cos(degrees * Math.PI / 180);
+                bullet.dy = -3 * Math.sin(degrees * Math.PI / 180);
+                bullets.push(bullet);
+            }, false);
+
+            function drawbullets() {
+                for (var i = bullets.length - 1; i >= 0; i--) {
+                    bullets[i].x += bullets[i].dx;
+                    bullets[i].y += bullets[i].dy;
+                    if(bullets[i].x > WIDTH || bullets[i].x < 0) {
+                        bullets.splice(i, 1);
+                    }
+                    else if(bullets[i].y > HEIGHT || bullets[i].y < 0) {
+                        bullets.splice(i, 1);
+                    }
+                    else {
+                        ctx.beginPath();
+                        var r = 5;
+                        ctx.arc(bullets[i].x, bullets[i].y, r, 0, Math.PI*2, true);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                };
+            }
+
+            $(document).keydown(onKeyDown);
+            $(document).keyup(onKeyUp);
+
+            function handleMouseMove(event) {
+                var dot, eventDoc, doc, body, pageX, pageY;
+                event = event || window.event; // IE-ism
+                if (event.pageX == null && event.clientX != null) {
+                    eventDoc = (event.target && event.target.ownerDocument) || document;
+                    doc = eventDoc.documentElement;
+                    body = eventDoc.body;
+                    event.pageX = event.clientX +
+                      (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+                      (doc && doc.clientLeft || body && body.clientLeft || 0);
+                    event.pageY = event.clientY +
+                      (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+                      (doc && doc.clientTop  || body && body.clientTop  || 0 );
+                }
+                mousePos = {
+                    x: event.pageX,
+                    y: event.pageY
+                };
+            }
+
+            function draw() {
+                clear();
+                var dx = 0;
+                var dy = 0;
+                if(rightDown && upDown) {
+                    dx += 4;
+                    dy -= 4;
+                }
+                else if(rightDown && downDown) {
+                    dx += 4;
+                    dy += 4;
+                }
+                else if(leftDown && upDown) {
+                    dx -= 4;
+                    dy -= 4;
+                }
+                else if(leftDown && downDown) {
+                    dx -= 4;
+                    dy += 4;
+                }
+                else {
+                    if (rightDown) dx += 8;
+                    if (leftDown) dx -= 8;
+                    if (upDown) dy -= 8;
+                    if (downDown) dy += 8;
+                }
+                // set position
+                if(!(paddlex + dx + paddlew > WIDTH || paddlex +dx < 0)) {
+                    paddlex += dx;
+                }
+                if(!(paddley + dy + paddleh > HEIGHT || paddley +dy < 0)) {
+                    paddley += dy;
+                }
+                rect(paddlex, paddley, paddlew, paddleh);
+                drawbullets();
+            }
+
+            init();
+            init_snake();
+
+            document.onmousemove = handleMouseMove;
+
+        });
+    </script>
+</body>
+</html>
