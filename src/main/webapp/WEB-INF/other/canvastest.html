@@ -54,8 +54,8 @@
 
             function init() {
               ctx = $('#canvas')[0].getContext("2d");
-              WIDTH = $("#canvas").width()
-              HEIGHT = $("#canvas").height()
+              WIDTH = $("#canvas").width();
+              HEIGHT = $("#canvas").height();
               intervalId = setInterval(draw, 10);
               return intervalId;
             }
@@ -119,6 +119,15 @@
             var elem = document.getElementById("canvas");
 
             elem.addEventListener('mousedown', function(event) {
+                var bullet = {};
+                bullet.x = paddlex + paddlew / 2;
+                bullet.y = paddley + paddleh / 2;
+                bullet.dx = -6 * Math.cos(degrees * Math.PI / 180);
+                bullet.dy = -6 * Math.sin(degrees * Math.PI / 180);
+                bullets.push(bullet);
+            }, false);
+
+            elem.addEventListener('mousewheel', function(event) {
                 var bullet = {};
                 bullet.x = paddlex + paddlew / 2;
                 bullet.y = paddley + paddleh / 2;
